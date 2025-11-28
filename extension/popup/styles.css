@@ -133,6 +133,11 @@ body {
     color: white;
 }
 
+.risk-level.low {
+    background: #FFC107;
+    color: #212121;
+}
+
 .risk-level.medium {
     background: #ff9800;
 }

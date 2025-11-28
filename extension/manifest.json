@@ -17,17 +17,17 @@
   ],
   
   "background": {
-    "service_worker": "background/service-worker.js"
+    "service_worker": "background/service-worker-final.js"
   },
   
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
       "js": [
-        "content/content-script.js"
+        "content/content-script-simple.js"
       ],
       "css": ["content/content-styles.css"],
-      "run_at": "document_idle"
+      "run_at": "document_start"
     }
   ],
   

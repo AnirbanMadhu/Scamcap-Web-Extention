@@ -5,9 +5,10 @@ import os
 from dotenv import load_dotenv
 
 from .api.routes.phishing import router as phishing_router
-from .api.routes.deepfake import router as deepfake_router  
+from .api.routes.deepfake import router as deepfake_router
 from .api.routes.auth import router as auth_router
 from .api.routes.mfa import router as mfa_router
+from .api.routes.test import router as test_router
 from .config.database import connect_to_mongo, close_mongo_connection
 from .config.settings import get_settings
 
@@ -22,10 +23,10 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS middleware
+# CORS middleware - Allow all origins for local development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["chrome-extension://*", "moz-extension://*"],
+    allow_origins=["*"],  # Allow all origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -41,6 +42,7 @@ async def shutdown_event():
     await close_mongo_connection()
 
 # Include API routes
+app.include_router(test_router, prefix="/api/v1/test", tags=["testing"])
 app.include_router(phishing_router, prefix="/api/v1/phishing", tags=["phishing"])
 app.include_router(deepfake_router, prefix="/api/v1/deepfake", tags=["deepfake"])
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["authentication"])
