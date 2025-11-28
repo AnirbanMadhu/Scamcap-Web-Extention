@@ -16,7 +16,6 @@ ScamCap is a comprehensive AI-powered browser extension that protects users from
 - **Chrome Extension**: Manifest V3 with service workers and content scripts
 - **Backend API**: FastAPI with async/await patterns and MongoDB
 - **ML Models**: PyTorch-based BERT and EfficientNet implementations
-- **Deployment**: Docker containerization with AWS deployment scripts
 
 ## Project Structure
 
@@ -65,8 +64,6 @@ ScamCap Extension/
 ├── tests/                      # Test suites
 │   ├── test_backend.py
 │   └── test_extension.js
-├── Dockerfile                  # Container configuration
-├── docker-compose.yml         # Multi-service orchestration
 └── requirements.txt           # Python dependencies
 ```
 
@@ -95,9 +92,6 @@ Install and start MongoDB:
 ```powershell
 # Start MongoDB (if installed locally)
 mongod
-
-# Or use Docker
-docker run -d -p 27017:27017 --name mongodb mongo:5.0
 ```
 
 ### 3. Configure Environment Variables
@@ -120,7 +114,7 @@ FIREBASE_SERVICE_ACCOUNT=path/to/firebase-service-account.json
 & "D:\venvs\scamcap\Scripts\Activate.ps1"
 
 # Start FastAPI server
-uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
+python app.py
 ```
 
 ### 5. Install Chrome Extension
@@ -147,26 +141,6 @@ python ml-models/phishing/train_phishing_model.py
 ```powershell
 # Train deepfake detection model
 python ml-models/deepfake/train_deepfake_model.py
-```
-
-## Docker Deployment
-
-### Local Development
-
-```powershell
-# Build and start all services
-docker-compose up --build
-
-# Access API at http://localhost:8000
-# MongoDB at localhost:27017
-```
-
-### Production Deployment
-
-```bash
-# Deploy to AWS (Linux/WSL)
-chmod +x deployment/aws-deploy.sh
-./deployment/aws-deploy.sh
 ```
 
 ## API Endpoints
@@ -378,8 +352,7 @@ ScamCap/
 │   │   ├── models/            # Database models
 │   │   ├── services/          # Business logic
 │   │   └── utils/             # Utility functions
-│   ├── requirements.txt
-│   └── Dockerfile
+│   └── requirements.txt
 ├── extension/                  # Chrome browser extension
 │   ├── manifest.json
 │   ├── popup/                 # Extension popup UI
@@ -390,7 +363,6 @@ ScamCap/
 │   ├── phishing/              # Phishing detection
 │   ├── deepfake/              # Deepfake detection
 │   └── training/              # Model training scripts
-├── deployment/                 # Docker & cloud configs
 ├── tests/                      # Unit & integration tests
 └── docs/                       # Documentation
 ```
@@ -413,14 +385,13 @@ pip install -r backend/requirements.txt
 
 ### 2. Database Setup
 ```bash
-# Start MongoDB (Docker)
-docker run -d -p 27017:27017 --name scamcap-mongo mongo:latest
+# Start MongoDB locally
+mongod
 ```
 
 ### 3. API Service
 ```bash
-cd backend
-python app/main.py
+python app.py
 ```
 
 ### 4. Browser Extension
@@ -460,7 +431,6 @@ python app/main.py
 ## 🌐 Deployment
 - **Cloud**: AWS EC2 + S3 storage
 - **Database**: MongoDB Atlas
-- **Containers**: Docker with auto-scaling
 - **CDN**: CloudFront for global distribution
 
 ## 📝 License

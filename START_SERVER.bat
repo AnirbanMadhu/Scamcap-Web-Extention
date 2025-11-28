@@ -9,6 +9,6 @@ echo Press Ctrl+C to stop the server
 echo.
 
 cd "D:\Coding Junction\Projects\ScamCap Extention"
-"D:\Coding Junction\Projects\ScamCap Extention\venvs\scamcap\Scripts\python.exe" -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
+"D:\Coding Junction\Projects\ScamCap Extention\venvs\scamcap\Scripts\python.exe" app.py
 
 pause

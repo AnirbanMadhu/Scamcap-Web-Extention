@@ -2,6 +2,7 @@
 console.log('Popup initializing...');
 
 let currentTab = null;
+let currentThreshold = 0.7;
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
@@ -20,6 +21,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Display URL
     document.getElementById('pageUrl').textContent = currentTab.url || 'Unknown URL';
 
+    // Load settings
+    await loadSettings();
+
     // Load stats
     await loadStats();
 
@@ -28,9 +32,67 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Setup scan button
     document.getElementById('scanButton').addEventListener('click', manualScan);
+
+    // Setup threshold controls
+    setupThresholdControls();
 });
 
-async function loadStats() {
+async function loadSettings() {
+    try {
+        const result = await chrome.storage.local.get(['threshold']);
+        if (result.threshold !== undefined) {
+            currentThreshold = result.threshold;
+        }
+        document.getElementById('riskThreshold').value = currentThreshold;
+        document.getElementById('thresholdValue').textContent = currentThreshold;
+        console.log('Settings loaded:', { threshold: currentThreshold });
+    } catch (error) {
+        console.error('Error loading settings:', error);
+    }
+}
+
+async function saveSettings() {
+    try {
+        await chrome.storage.local.set({ threshold: currentThreshold });
+        console.log('Settings saved:', { threshold: currentThreshold });
+    } catch (error) {
+        console.error('Error saving settings:', error);
+    }
+}
+
+function setupThresholdControls() {
+    const slider = document.getElementById('riskThreshold');
+    const valueDisplay = document.getElementById('thresholdValue');
+    const decreaseBtn = document.getElementById('decreaseThreshold');
+    const increaseBtn = document.getElementById('increaseThreshold');
+
+    // Slider change
+    slider.addEventListener('input', (e) => {
+        currentThreshold = parseFloat(e.target.value);
+        valueDisplay.textContent = currentThreshold;
+        saveSettings();
+    });
+
+    // Decrease button
+    decreaseBtn.addEventListener('click', () => {
+        if (currentThreshold > 0.1) {
+            currentThreshold = Math.max(0.1, currentThreshold - 0.1);
+            slider.value = currentThreshold;
+            valueDisplay.textContent = currentThreshold;
+            saveSettings();
+        }
+    });
+
+    // Increase button
+    increaseBtn.addEventListener('click', () => {
+        if (currentThreshold < 1.0) {
+            currentThreshold = Math.min(1.0, currentThreshold + 0.1);
+            slider.value = currentThreshold;
+            valueDisplay.textContent = currentThreshold;
+            saveSettings();
+        }
+    });
+}
     try {
         const response = await chrome.runtime.sendMessage({ type: 'GET_STATS' });
 
@@ -86,21 +148,30 @@ function displayResult(result) {
     const riskScorePercent = Math.round(result.risk_score * 100);
     document.querySelector('.score-value').textContent = riskScorePercent;
 
-    // Update risk level with proper text
+    // Update risk level with proper text and styling
     const riskLevelEl = document.getElementById('riskLevel');
 
-    // Determine risk level based on score
-    if (result.risk_score >= 0.7) {
+    // Clear existing classes
+    riskLevelEl.className = 'risk-level';
+
+    // Determine risk level based on score and level
+    if (result.risk_level === 'CRITICAL') {
+        riskLevelEl.className = 'risk-level critical';
+        riskLevelEl.textContent = '🚨 CRITICAL THREAT';
+        riskLevelEl.style.color = '#D32F2F';
+        riskLevelEl.style.fontWeight = 'bold';
+        riskLevelEl.style.fontSize = '16px';
+    } else if (result.risk_level === 'HIGH') {
         riskLevelEl.className = 'risk-level high';
         riskLevelEl.textContent = '⚠️ HIGH RISK';
         riskLevelEl.style.color = '#F44336';
-    } else if (result.risk_score >= 0.4) {
+    } else if (result.risk_level === 'MEDIUM') {
         riskLevelEl.className = 'risk-level medium';
         riskLevelEl.textContent = '⚠️ MEDIUM RISK';
         riskLevelEl.style.color = '#FF9800';
-    } else if (result.risk_score >= 0.2) {
+    } else if (result.risk_level === 'LOW') {
         riskLevelEl.className = 'risk-level low';
-        riskLevelEl.textContent = '✓ LOW RISK';
+        riskLevelEl.textContent = '⚠️ LOW RISK';
         riskLevelEl.style.color = '#FFC107';
     } else {
         riskLevelEl.className = 'risk-level safe';
@@ -186,6 +257,18 @@ styles.textContent = `
     .risk-level.low { color: #FFC107; }
     .risk-level.medium { color: #FF9800; font-weight: bold; }
     .risk-level.high { color: #F44336; font-weight: bold; }
+    .risk-level.critical {
+        color: #D32F2F;
+        font-weight: bold;
+        font-size: 16px;
+        text-shadow: 0 0 3px rgba(211, 47, 47, 0.3);
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
     .status-dot.danger { background-color: #F44336; }
 `;
 document.head.appendChild(styles);

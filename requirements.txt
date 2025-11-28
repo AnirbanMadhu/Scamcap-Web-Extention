@@ -1,14 +1,14 @@
 # FastAPI and Web Framework
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
 
 # Database
 motor==3.3.2
 pymongo==4.6.0
 
 # Data Models and Validation
-pydantic==2.5.0
-pydantic-settings==2.1.0
+pydantic>=2.9.0
+pydantic-settings==2.5.0
 
 # Authentication and Security
 python-jose[cryptography]==3.3.0
@@ -27,7 +27,7 @@ tokenizers==0.20.3
 
 # Machine Learning - General
 scikit-learn==1.6.0
-numpy==2.2.0
+numpy>=1.21.0
 pandas==2.2.3
 
 # Computer Vision
@@ -36,11 +36,11 @@ Pillow==11.0.0
 albumentations==1.4.23
 
 # Data Visualization
-matplotlib==3.8.2
+matplotlib>=3.8.0
 seaborn==0.13.0
 
 # Progress Bars and Utilities
-tqdm==4.66.1
+tqdm>=4.66.1
 
 # External Services
 twilio==8.11.0
@@ -55,9 +55,9 @@ aiofiles==23.2.1
 # Testing
 pytest==7.4.3
 pytest-asyncio==0.21.1
-requests==2.31.0
+requests>=2.31.0
 
 # Additional utilities
 python-dateutil==2.8.2
-cryptography==41.0.8
-httpx==0.25.2
+cryptography>=41.0.0
+httpx>=0.25.0
