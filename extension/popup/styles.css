@@ -38,9 +38,12 @@ body {
     gap: 10px;
 }
 
-.logo img {
+.logo img,
+.logo-icon {
     width: 24px;
     height: 24px;
+    font-size: 24px;
+    line-height: 1;
 }
 
 .logo h1 {

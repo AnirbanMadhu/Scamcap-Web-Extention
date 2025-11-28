@@ -7,10 +7,8 @@
   "permissions": [
     "activeTab",
     "storage",
-    "background",
     "notifications",
-    "webRequest",
-    "webRequestBlocking",
+    "scripting",
     "unlimitedStorage"
   ],
   
@@ -26,9 +24,7 @@
     {
       "matches": ["<all_urls>"],
       "js": [
-        "content/content-script.js",
-        "content/phishing-detector.js",
-        "content/media-scanner.js"
+        "content/content-script.js"
       ],
       "css": ["content/content-styles.css"],
       "run_at": "document_idle"
@@ -37,34 +33,17 @@
   
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "ScamCap Security Dashboard",
-    "default_icon": {
-      "16": "assets/icons/icon-16.png",
-      "32": "assets/icons/icon-32.png",
-      "48": "assets/icons/icon-48.png",
-      "128": "assets/icons/icon-128.png"
-    }
-  },
-  
-  "icons": {
-    "16": "assets/icons/icon-16.png",
-    "32": "assets/icons/icon-32.png",
-    "48": "assets/icons/icon-48.png",
-    "128": "assets/icons/icon-128.png"
+    "default_title": "ScamCap Security Dashboard"
   },
   
   "web_accessible_resources": [
     {
       "resources": [
-        "assets/icons/*",
-        "popup/styles.css",
-        "content/warning-overlay.html"
+        "popup/styles.css"
       ],
       "matches": ["<all_urls>"]
     }
   ],
-  
-  "options_page": "popup/options.html",
   
   "commands": {
     "quick_scan": {
