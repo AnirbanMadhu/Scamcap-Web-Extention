@@ -4,13 +4,13 @@ import uvicorn
 import os
 from dotenv import load_dotenv
 
-from .api.routes.phishing import router as phishing_router
-from .api.routes.deepfake import router as deepfake_router
-from .api.routes.auth import router as auth_router
-from .api.routes.mfa import router as mfa_router
-from .api.routes.test import router as test_router
-from .config.database import connect_to_mongo, close_mongo_connection
-from .config.settings import get_settings
+from backend.app.api.routes.phishing import router as phishing_router
+from backend.app.api.routes.deepfake import router as deepfake_router
+from backend.app.api.routes.auth import router as auth_router
+from backend.app.api.routes.mfa import router as mfa_router
+from backend.app.api.routes.test import router as test_router
+from backend.app.config.database import connect_to_mongo, close_mongo_connection
+from backend.app.config.settings import get_settings
 
 load_dotenv()
 
