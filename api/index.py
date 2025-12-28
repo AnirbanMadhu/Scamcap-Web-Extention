@@ -13,7 +13,16 @@ sys.path.insert(0, os.path.join(project_root, 'backend'))
 try:
     from app.main import app
 except ImportError:
-    from backend.app.main import app
+    try:
+        from backend.app.main import app
+    except ImportError as e:
+        # Fallback: create minimal app if imports fail
+        from fastapi import FastAPI
+        app = FastAPI()
+        
+        @app.get("/")
+        def root():
+            return {"error": f"Import failed: {str(e)}", "message": "Check deployment logs"}
 
-# Vercel handler
-handler = app
+# Export for Vercel
+app = app
