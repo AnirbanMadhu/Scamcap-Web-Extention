@@ -32,14 +32,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Database connection events
-@app.on_event("startup")
-async def startup_event():
-    await connect_to_mongo()
+# Database connection events (optional for serverless)
+# @app.on_event("startup")
+# async def startup_event():
+#     await connect_to_mongo()
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    await close_mongo_connection()
+# @app.on_event("shutdown")
+# async def shutdown_event():
+#     await close_mongo_connection()
 
 # Include API routes
 app.include_router(test_router, prefix="/api/v1/test", tags=["testing"])
@@ -55,6 +55,9 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "ScamCap API"}
+
+# Vercel serverless handler
+handler = app
 
 if __name__ == "__main__":
     settings = get_settings()
