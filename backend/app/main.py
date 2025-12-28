@@ -15,19 +15,33 @@ except Exception as e:
     logger.info("dotenv not loaded (not needed in production)")
 
 # Import routes - works when backend folder is deployed to Vercel
+routes_loaded = False
+import_error = None
+
 try:
+    logger.info("Attempting to import routes...")
     from app.api.routes.phishing import router as phishing_router
+    logger.info("✓ Phishing router imported")
     from app.api.routes.deepfake import router as deepfake_router
+    logger.info("✓ Deepfake router imported")
     from app.api.routes.auth import router as auth_router
+    logger.info("✓ Auth router imported")
     from app.api.routes.mfa import router as mfa_router
+    logger.info("✓ MFA router imported")
     from app.api.routes.test import router as test_router
+    logger.info("✓ Test router imported")
     from app.config.database import connect_to_mongo, close_mongo_connection
+    logger.info("✓ Database imported")
     from app.config.settings import get_settings
+    logger.info("✓ Settings imported")
     
     routes_loaded = True
+    logger.info("All imports successful!")
 except Exception as e:
+    import traceback
+    import_error = str(e)
     logger.error(f"Failed to import routes: {e}")
-    routes_loaded = False
+    logger.error(f"Traceback: {traceback.format_exc()}")
     get_settings = lambda: None
 
 # Initialize FastAPI app
@@ -71,11 +85,14 @@ if routes_loaded:
 
 @app.get("/")
 async def root():
-    return {
+    response = {
         "message": "ScamCap API is running", 
         "version": "1.0.0",
         "routes_loaded": routes_loaded
     }
+    if import_error:
+        response["import_error"] = import_error
+    return response
 
 @app.get("/health")
 async def health_check():
