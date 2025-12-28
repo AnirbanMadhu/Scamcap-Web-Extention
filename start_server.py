@@ -54,8 +54,8 @@ def check_environment():
         print("    Twilio SMS: Not configured (SMS MFA disabled)")
     
     # Check ML Models
-    phishing_model = os.getenv("PHISHING_MODEL_PATH", "ml-models/phishing/bert_phishing_model.pth")
-    deepfake_model = os.getenv("DEEPFAKE_MODEL_PATH", "ml-models/deepfake/efficientnet_deepfake_model.pth")
+    phishing_model = os.getenv("PHISHING_MODEL_PATH", "backend/ml-models/phishing/bert_phishing_model.pth")
+    deepfake_model = os.getenv("DEEPFAKE_MODEL_PATH", "backend/ml-models/deepfake/efficientnet_deepfake_model.pth")
     print(f"    Phishing Model: {phishing_model}")
     print(f"    Deepfake Model: {deepfake_model}")
     

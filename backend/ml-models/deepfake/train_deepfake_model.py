@@ -530,7 +530,7 @@ def main():
         'test_results': test_results
     }
     
-    with open('../../ml-models/deepfake/training_results.json', 'w') as f:
+    with open('training_results.json', 'w') as f:
         json.dump(results, f, indent=2)
     
     logger.info("Training completed successfully!")

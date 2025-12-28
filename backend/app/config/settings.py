@@ -23,8 +23,8 @@ class Settings(BaseSettings):
     mfa_trigger_threshold: float = 0.7
     
     # ML Models
-    phishing_model_path: str = "ml-models/phishing/bert_phishing_model.pth"
-    deepfake_model_path: str = "ml-models/deepfake/efficientnet_deepfake_model.pth"
+    phishing_model_path: str = "backend/ml-models/phishing/bert_phishing_model.pth"
+    deepfake_model_path: str = "backend/ml-models/deepfake/efficientnet_deepfake_model.pth"
     
     # Risk Thresholds
     phishing_risk_threshold: float = 0.7

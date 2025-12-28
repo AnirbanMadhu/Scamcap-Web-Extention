@@ -20,17 +20,17 @@ ScamCap/
 │   │   ├── config/            # Configuration
 │   │   ├── models/            # Data models
 │   │   └── services/          # Business logic
+│   ├── extension/             # Chrome browser extension
+│   │   ├── manifest.json
+│   │   ├── popup/             # Extension UI
+│   │   ├── content/           # Content scripts
+│   │   └── background/        # Service worker
+│   ├── ml-models/             # AI/ML models
+│   │   ├── phishing/
+│   │   └── deepfake/
 │   └── requirements.txt
-├── extension/                  # Chrome browser extension
-│   ├── manifest.json
-│   ├── popup/                 # Extension UI
-│   ├── content/               # Content scripts
-│   └── background/            # Service worker
 ├── frontend/                   # Next.js website
 │   └── src/
-├── ml-models/                  # AI/ML models
-│   ├── phishing/
-│   └── deepfake/
 └── package.json
 ```
 
@@ -93,7 +93,7 @@ The frontend will run on `http://localhost:3000`
 1. Open Chrome and go to `chrome://extensions/`
 2. Enable **Developer mode** (top-right toggle)
 3. Click **Load unpacked**
-4. Select the `extension/` folder from this project
+4. Select the `backend/extension/` folder from this project
 5. Pin the ScamCap extension to your toolbar
 
 ## ⚙️ Configuration
@@ -137,12 +137,12 @@ If you don't provide these, the app will use default development settings.
 
 **Phishing Model:**
 ```bash
-python ml-models/phishing/train_phishing_model.py
+python backend/ml-models/phishing/train_phishing_model.py
 ```
 
 **Deepfake Model:**
 ```bash
-python ml-models/deepfake/train_deepfake_model.py
+python backend/ml-models/deepfake/train_deepfake_model.py
 ```
 
 ### Running Tests
@@ -157,7 +157,7 @@ npm test
 ## 🐛 Troubleshooting
 
 ### Extension not loading
-- Make sure all files are present in `extension/` folder
+- Make sure all files are present in `backend/extension/` folder
 - Check browser console (F12) for errors
 - Try reloading the extension
 

@@ -2,16 +2,16 @@
   "name": "scamcap-extension",
   "version": "1.0.0",
   "description": "AI-powered browser extension for phishing and deepfake protection",
-  "main": "extension/manifest.json",
+  "main": "backend/extension/manifest.json",
   "scripts": {
     "test": "jest tests/test_extension.js",
     "test:watch": "jest tests/test_extension.js --watch",
     "test:coverage": "jest tests/test_extension.js --coverage",
-    "lint": "eslint extension/ tests/",
-    "lint:fix": "eslint extension/ tests/ --fix",
+    "lint": "eslint backend/extension/ tests/",
+    "lint:fix": "eslint backend/extension/ tests/ --fix",
     "build": "npm run lint && npm run test",
-    "dev": "web-ext run --source-dir=extension/",
-    "package": "web-ext build --source-dir=extension/ --artifacts-dir=dist/"
+    "dev": "web-ext run --source-dir=backend/extension/",
+    "package": "web-ext build --source-dir=backend/extension/ --artifacts-dir=dist/"
   },
   "keywords": [
     "chrome-extension",
@@ -35,9 +35,9 @@
     "testEnvironment": "jsdom",
     "setupFiles": ["<rootDir>/tests/setup.js"],
     "collectCoverageFrom": [
-      "extension/**/*.js",
-      "!extension/vendor/**",
-      "!extension/node_modules/**"
+      "backend/extension/**/*.js",
+      "!backend/extension/vendor/**",
+      "!backend/extension/node_modules/**"
     ],
     "coverageDirectory": "coverage",
     "coverageReporters": ["text", "lcov", "html"]

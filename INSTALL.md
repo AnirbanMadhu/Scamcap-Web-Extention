@@ -23,7 +23,7 @@
    - Go to `chrome://extensions/` (or `edge://extensions/`)
    - Enable "Developer mode" (toggle in top-right)
    - Click "Load unpacked"
-   - Select the `extension` folder
+   - Select the `backend\extension` folder
    - Done! The extension icon will appear in your browser toolbar
 
 ## For macOS/Linux Users
@@ -75,7 +75,7 @@ The website will run on http://localhost:3000
 - Or edit `start_server.py` to use a different port
 
 **Extension not loading**
-- Make sure all files in the `extension` folder are present
+- Make sure all files in the `backend/extension` folder are present
 - Check browser console (F12) for errors
 - Try disabling and re-enabling the extension
 
