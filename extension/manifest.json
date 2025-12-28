@@ -1,0 +1,68 @@
+{
+  "manifest_version": 3,
+  "name": "ScamCap - AI Security Guard",
+  "version": "1.0.0",
+  "description": "AI-powered protection against phishing attacks and deepfake threats with adaptive MFA security.",
+  
+  "permissions": [
+    "activeTab",
+    "storage",
+    "notifications",
+    "scripting",
+    "unlimitedStorage"
+  ],
+  
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "content/content-script.js"
+      ],
+      "css": ["content/content-styles.css"],
+      "run_at": "document_start"
+    }
+  ],
+  
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "ScamCap Security Dashboard"
+  },
+  
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "popup/styles.css"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  
+  "commands": {
+    "quick_scan": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S",
+        "mac": "Command+Shift+S"
+      },
+      "description": "Quick security scan of current page"
+    },
+    "toggle_protection": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+P",
+        "mac": "Command+Shift+P"
+      },
+      "description": "Toggle ScamCap protection on/off"
+    }
+  },
+  
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; frame-ancestors 'none';"
+  }
+}

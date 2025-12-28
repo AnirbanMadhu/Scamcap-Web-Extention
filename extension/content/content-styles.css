@@ -1,0 +1,323 @@
+/* ScamCap Content Styles */
+
+/* Warning overlay styles */
+#scamcap-warning-overlay {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    color: #333 !important;
+}
+
+#scamcap-warning-overlay * {
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#scamcap-warning-overlay h2 {
+    font-size: 24px !important;
+    font-weight: bold !important;
+    margin-bottom: 15px !important;
+}
+
+#scamcap-warning-overlay p {
+    margin-bottom: 10px !important;
+    font-size: 14px !important;
+}
+
+#scamcap-warning-overlay button {
+    font-family: inherit !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+#scamcap-warning-overlay button:hover {
+    opacity: 0.9 !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Suspicious element highlighting */
+.scamcap-suspicious {
+    border: 3px solid #ff4444 !important;
+    box-shadow: 0 0 15px rgba(255, 68, 68, 0.5) !important;
+    position: relative !important;
+}
+
+.scamcap-suspicious::before {
+    content: "⚠️ Suspicious Content" !important;
+    position: absolute !important;
+    top: -25px !important;
+    left: 0 !important;
+    background: #ff4444 !important;
+    color: white !important;
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    border-radius: 3px !important;
+    z-index: 1000 !important;
+    white-space: nowrap !important;
+}
+
+/* Progress indicator */
+.scamcap-progress {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 3px !important;
+    background: linear-gradient(90deg, #007cba, #00a8e6) !important;
+    z-index: 999999 !important;
+    animation: scamcap-progress 2s ease-in-out !important;
+}
+
+@keyframes scamcap-progress {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
+
+/* Toast notifications */
+.scamcap-toast {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    background: white !important;
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;
+    padding: 15px 20px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    z-index: 999998 !important;
+    max-width: 300px !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-size: 14px !important;
+    animation: scamcap-slide-in 0.3s ease-out !important;
+}
+
+.scamcap-toast.success {
+    border-left: 4px solid #4caf50 !important;
+}
+
+.scamcap-toast.warning {
+    border-left: 4px solid #ff9800 !important;
+}
+
+.scamcap-toast.error {
+    border-left: 4px solid #f44336 !important;
+}
+
+.scamcap-toast .title {
+    font-weight: bold !important;
+    margin-bottom: 5px !important;
+}
+
+.scamcap-toast .message {
+    color: #666 !important;
+    font-size: 12px !important;
+}
+
+@keyframes scamcap-slide-in {
+    from {
+        transform: translateX(100%) !important;
+        opacity: 0 !important;
+    }
+    to {
+        transform: translateX(0) !important;
+        opacity: 1 !important;
+    }
+}
+
+/* Pulse effect for scanning */
+.scamcap-scanning {
+    animation: scamcap-pulse 1.5s infinite !important;
+}
+
+@keyframes scamcap-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(0, 124, 186, 0.7) !important; }
+    70% { box-shadow: 0 0 0 10px rgba(0, 124, 186, 0) !important; }
+    100% { box-shadow: 0 0 0 0 rgba(0, 124, 186, 0) !important; }
+}
+
+/* Form field warnings */
+.scamcap-form-warning {
+    border: 2px solid #ff9800 !important;
+    background-color: rgba(255, 152, 0, 0.1) !important;
+}
+
+.scamcap-form-warning::placeholder {
+    color: #ff9800 !important;
+}
+
+/* Media content warnings */
+.scamcap-media-warning {
+    position: relative !important;
+    filter: blur(2px) !important;
+}
+
+.scamcap-media-warning::after {
+    content: "⚠️ Potential Deepfake" !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    background: rgba(255, 68, 68, 0.9) !important;
+    color: white !important;
+    padding: 8px 12px !important;
+    border-radius: 5px !important;
+    font-weight: bold !important;
+    font-size: 14px !important;
+    white-space: nowrap !important;
+    z-index: 1000 !important;
+}
+
+/* Link safety indicators */
+.scamcap-safe-link {
+    position: relative !important;
+}
+
+.scamcap-safe-link::after {
+    content: "✓" !important;
+    position: absolute !important;
+    top: -5px !important;
+    right: -10px !important;
+    background: #4caf50 !important;
+    color: white !important;
+    border-radius: 50% !important;
+    width: 16px !important;
+    height: 16px !important;
+    font-size: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: bold !important;
+}
+
+.scamcap-risky-link {
+    position: relative !important;
+    text-decoration: none !important;
+    color: #ff4444 !important;
+}
+
+.scamcap-risky-link::after {
+    content: "⚠️" !important;
+    position: absolute !important;
+    top: -5px !important;
+    right: -15px !important;
+    font-size: 12px !important;
+}
+
+/* Quick scan button */
+.scamcap-quick-scan {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 50% !important;
+    background: #007cba !important;
+    color: white !important;
+    border: none !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 12px rgba(0, 124, 186, 0.3) !important;
+    z-index: 999997 !important;
+    font-size: 20px !important;
+    transition: all 0.3s ease !important;
+}
+
+.scamcap-quick-scan:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 6px 20px rgba(0, 124, 186, 0.4) !important;
+}
+
+/* Risk score badge */
+.scamcap-risk-badge {
+    position: absolute !important;
+    top: -10px !important;
+    right: -10px !important;
+    background: #ff4444 !important;
+    color: white !important;
+    border-radius: 50% !important;
+    width: 24px !important;
+    height: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 10px !important;
+    font-weight: bold !important;
+    z-index: 1001 !important;
+}
+
+.scamcap-risk-badge.low {
+    background: #4caf50 !important;
+}
+
+.scamcap-risk-badge.medium {
+    background: #ff9800 !important;
+}
+
+.scamcap-risk-badge.high {
+    background: #f44336 !important;
+}
+
+/* Loading spinner */
+.scamcap-spinner {
+    border: 2px solid #f3f3f3 !important;
+    border-top: 2px solid #007cba !important;
+    border-radius: 50% !important;
+    width: 20px !important;
+    height: 20px !important;
+    animation: scamcap-spin 1s linear infinite !important;
+    display: inline-block !important;
+    margin-right: 8px !important;
+}
+
+@keyframes scamcap-spin {
+    0% { transform: rotate(0deg) !important; }
+    100% { transform: rotate(360deg) !important; }
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    #scamcap-warning-overlay .warning-box {
+        margin: 20px !important;
+        padding: 20px !important;
+    }
+    
+    .scamcap-toast {
+        right: 10px !important;
+        top: 10px !important;
+        max-width: calc(100% - 20px) !important;
+    }
+    
+    .scamcap-quick-scan {
+        bottom: 10px !important;
+        right: 10px !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .scamcap-suspicious {
+        border-width: 4px !important;
+        box-shadow: 0 0 20px rgba(255, 68, 68, 0.8) !important;
+    }
+    
+    .scamcap-warning-overlay {
+        background: rgba(0, 0, 0, 0.95) !important;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .scamcap-toast,
+    .scamcap-quick-scan,
+    .scamcap-spinner {
+        animation: none !important;
+        transition: none !important;
+    }
+    
+    .scamcap-pulse,
+    .scamcap-scanning {
+        animation: none !important;
+    }
+}
