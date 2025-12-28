@@ -16,9 +16,9 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expires_hours: int = 24
     
-    # ML Models
-    phishing_model_path: str = "backend/ml-models/phishing/bert_phishing_model.pth"
-    deepfake_model_path: str = "backend/ml-models/deepfake/efficientnet_deepfake_model.pth"
+    # ML Models (Optional - placeholder implementation used)
+    phishing_model_path: Optional[str] = None
+    deepfake_model_path: Optional[str] = None
     
     # Risk Thresholds
     phishing_risk_threshold: float = 0.7
