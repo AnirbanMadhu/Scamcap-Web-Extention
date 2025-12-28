@@ -7,13 +7,13 @@ class Settings(BaseSettings):
     api_host: str = "0.0.0.0"
     api_port: int = 8000
     api_workers: int = 1
-    debug: bool = True
+    debug: bool = False
     
     # Database Configuration
-    mongodb_url: str = "mongodb://localhost:27017/scamcap"
+    mongodb_url: str = os.getenv("MONGODB_URL", "mongodb://localhost:27017/scamcap")
     
     # JWT Configuration
-    secret_key: str = "your-super-secret-key-change-in-production"
+    secret_key: str = os.getenv("JWT_SECRET_KEY", "your-super-secret-key-change-in-production")
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     

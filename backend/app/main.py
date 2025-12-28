@@ -3,23 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
 
-# Handle imports for both local and Vercel environments
-try:
-    from app.api.routes.phishing import router as phishing_router
-    from app.api.routes.deepfake import router as deepfake_router
-    from app.api.routes.auth import router as auth_router
-    from app.api.routes.mfa import router as mfa_router
-    from app.api.routes.test import router as test_router
-    from app.config.database import connect_to_mongo, close_mongo_connection
-    from app.config.settings import get_settings
-except ImportError:
-    from backend.app.api.routes.phishing import router as phishing_router
-    from backend.app.api.routes.deepfake import router as deepfake_router
-    from backend.app.api.routes.auth import router as auth_router
-    from backend.app.api.routes.mfa import router as mfa_router
-    from backend.app.api.routes.test import router as test_router
-    from backend.app.config.database import connect_to_mongo, close_mongo_connection
-    from backend.app.config.settings import get_settings
+# Import routes - works when backend folder is deployed to Vercel
+from app.api.routes.phishing import router as phishing_router
+from app.api.routes.deepfake import router as deepfake_router
+from app.api.routes.auth import router as auth_router
+from app.api.routes.mfa import router as mfa_router
+from app.api.routes.test import router as test_router
+from app.config.database import connect_to_mongo, close_mongo_connection
+from app.config.settings import get_settings
 
 load_dotenv()
 
