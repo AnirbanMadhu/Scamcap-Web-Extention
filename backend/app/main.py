@@ -1,16 +1,25 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
 import os
 from dotenv import load_dotenv
 
-from backend.app.api.routes.phishing import router as phishing_router
-from backend.app.api.routes.deepfake import router as deepfake_router
-from backend.app.api.routes.auth import router as auth_router
-from backend.app.api.routes.mfa import router as mfa_router
-from backend.app.api.routes.test import router as test_router
-from backend.app.config.database import connect_to_mongo, close_mongo_connection
-from backend.app.config.settings import get_settings
+# Handle imports for both local and Vercel environments
+try:
+    from app.api.routes.phishing import router as phishing_router
+    from app.api.routes.deepfake import router as deepfake_router
+    from app.api.routes.auth import router as auth_router
+    from app.api.routes.mfa import router as mfa_router
+    from app.api.routes.test import router as test_router
+    from app.config.database import connect_to_mongo, close_mongo_connection
+    from app.config.settings import get_settings
+except ImportError:
+    from backend.app.api.routes.phishing import router as phishing_router
+    from backend.app.api.routes.deepfake import router as deepfake_router
+    from backend.app.api.routes.auth import router as auth_router
+    from backend.app.api.routes.mfa import router as mfa_router
+    from backend.app.api.routes.test import router as test_router
+    from backend.app.config.database import connect_to_mongo, close_mongo_connection
+    from backend.app.config.settings import get_settings
 
 load_dotenv()
 
@@ -60,11 +69,15 @@ async def health_check():
 handler = app
 
 if __name__ == "__main__":
-    settings = get_settings()
-    uvicorn.run(
-        "main:app",
-        host=settings.host,
-        port=settings.port,
-        reload=settings.debug,
-        workers=1 if settings.debug else 4
-    )
+    try:
+        import uvicorn
+        settings = get_settings()
+        uvicorn.run(
+            "main:app",
+            host=settings.host,
+            port=settings.port,
+            reload=settings.debug,
+            workers=1 if settings.debug else 4
+        )
+    except ImportError:
+        print("Uvicorn not available in serverless environment")

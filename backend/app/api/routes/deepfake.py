@@ -7,7 +7,6 @@ from ...services.threat_logger import ThreatLogger
 from ...models.schemas import User, ThreatType
 from ...config.settings import get_settings
 import logging
-import aiofiles
 import os
 import uuid
 
@@ -49,9 +48,9 @@ async def analyze_image_deepfake(
         temp_filename = f"{uuid.uuid4()}{file_extension}"
         temp_path = f"/tmp/{temp_filename}"
         
-        async with aiofiles.open(temp_path, 'wb') as temp_file:
-            content = await file.read()
-            await temp_file.write(content)
+        content = await file.read()
+        with open(temp_path, 'wb') as temp_file:
+            temp_file.write(content)
         
         # Perform deepfake detection
         result = await deepfake_detector.analyze_image(temp_path)
@@ -120,9 +119,9 @@ async def analyze_video_deepfake(
         temp_filename = f"{uuid.uuid4()}{file_extension}"
         temp_path = f"/tmp/{temp_filename}"
         
-        async with aiofiles.open(temp_path, 'wb') as temp_file:
-            content = await file.read()
-            await temp_file.write(content)
+        content = await file.read()
+        with open(temp_path, 'wb') as temp_file:
+            temp_file.write(content)
         
         # Perform deepfake detection
         result = await deepfake_detector.analyze_video(temp_path)
