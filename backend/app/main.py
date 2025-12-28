@@ -1,18 +1,34 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import os
-from dotenv import load_dotenv
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Load .env file if available (not needed in Vercel)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception as e:
+    logger.info("dotenv not loaded (not needed in production)")
 
 # Import routes - works when backend folder is deployed to Vercel
-from app.api.routes.phishing import router as phishing_router
-from app.api.routes.deepfake import router as deepfake_router
-from app.api.routes.auth import router as auth_router
-from app.api.routes.mfa import router as mfa_router
-from app.api.routes.test import router as test_router
-from app.config.database import connect_to_mongo, close_mongo_connection
-from app.config.settings import get_settings
-
-load_dotenv()
+try:
+    from app.api.routes.phishing import router as phishing_router
+    from app.api.routes.deepfake import router as deepfake_router
+    from app.api.routes.auth import router as auth_router
+    from app.api.routes.mfa import router as mfa_router
+    from app.api.routes.test import router as test_router
+    from app.config.database import connect_to_mongo, close_mongo_connection
+    from app.config.settings import get_settings
+    
+    routes_loaded = True
+except Exception as e:
+    logger.error(f"Failed to import routes: {e}")
+    routes_loaded = False
+    get_settings = lambda: None
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -41,16 +57,25 @@ app.add_middleware(
 # async def shutdown_event():
 #     await close_mongo_connection()
 
-# Include API routes
-app.include_router(test_router, prefix="/api/v1/test", tags=["testing"])
-app.include_router(phishing_router, prefix="/api/v1/phishing", tags=["phishing"])
-app.include_router(deepfake_router, prefix="/api/v1/deepfake", tags=["deepfake"])
-app.include_router(auth_router, prefix="/api/v1/auth", tags=["authentication"])
-app.include_router(mfa_router, prefix="/api/v1/mfa", tags=["mfa"])
+# Include API routes only if they loaded successfully
+if routes_loaded:
+    try:
+        app.include_router(test_router, prefix="/api/v1/test", tags=["testing"])
+        app.include_router(phishing_router, prefix="/api/v1/phishing", tags=["phishing"])
+        app.include_router(deepfake_router, prefix="/api/v1/deepfake", tags=["deepfake"])
+        app.include_router(auth_router, prefix="/api/v1/auth", tags=["authentication"])
+        app.include_router(mfa_router, prefix="/api/v1/mfa", tags=["mfa"])
+        logger.info("All routes loaded successfully")
+    except Exception as e:
+        logger.error(f"Failed to include routes: {e}")
 
 @app.get("/")
 async def root():
-    return {"message": "ScamCap API is running", "version": "1.0.0"}
+    return {
+        "message": "ScamCap API is running", 
+        "version": "1.0.0",
+        "routes_loaded": routes_loaded
+    }
 
 @app.get("/health")
 async def health_check():
