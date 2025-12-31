@@ -6,9 +6,8 @@ console.log('ScamCap service worker starting...');
 // ============================================
 // For LOCAL DEVELOPMENT: http://localhost:8000/api/v1
 // For PRODUCTION: Update to your deployed backend URL
-// Example: https://your-backend-name.vercel.app/api/v1
 // ============================================
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = 'https://scamcap-web-extention.vercel.app/api/v1';
 
 const scanCache = new Map();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
