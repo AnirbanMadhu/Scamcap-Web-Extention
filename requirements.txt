@@ -1,10 +1,7 @@
-# FastAPI and Web Framework - REQUIRED
+# FastAPI and Web Framework - REQUIRED for Vercel
 fastapi==0.109.0
-pydantic==2.5.3
-pydantic-settings==2.1.0
 
-# No uvicorn needed for Vercel (serverless)
-# uvicorn is NOT needed for Vercel deployment
+# No other dependencies needed for basic API functionality
 
 # Database - OPTIONAL (not used in lightweight mode)
 # motor==3.3.2

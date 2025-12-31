@@ -1,14 +1,11 @@
 """
-Vercel Serverless Entry Point - Minimal Version
+Vercel Serverless Entry Point - Ultra-Minimal Version
+Zero external dependencies beyond FastAPI
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import Optional
-import sys
-import os
 import re
-from urllib.parse import urlparse
+from typing import Optional
 
 # Create FastAPI app
 app = FastAPI(
@@ -26,19 +23,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Request/Response models
-class QuickScanRequest(BaseModel):
-    url: str
-    content: Optional[str] = None
-
-class QuickScanResponse(BaseModel):
-    success: bool
-    is_safe: bool
-    risk_score: float
-    risk_level: str
-    message: str
-    indicators: list
-
 # Phishing detection logic (inline)
 SUSPICIOUS_TLDS = ['.tk', '.ml', '.ga', '.cf', '.gq', '.xyz', '.top', '.pw', '.cc', '.su', '.buzz', '.work', '.click']
 LEGITIMATE_DOMAINS = ['google.com', 'youtube.com', 'facebook.com', 'amazon.com', 'paypal.com', 'microsoft.com', 
@@ -50,9 +34,17 @@ BRAND_KEYWORDS = ['paypal', 'amazon', 'google', 'microsoft', 'apple', 'netflix',
 def analyze_url(url: str) -> dict:
     """Simple phishing analysis"""
     try:
-        parsed = urlparse(url)
-        domain = parsed.netloc.lower()
-        path = parsed.path.lower()
+        # Parse URL manually to avoid any dependency issues
+        url_lower = url.lower()
+        
+        # Extract domain
+        if '://' in url:
+            domain = url.split('://')[1].split('/')[0]
+        else:
+            domain = url.split('/')[0]
+        
+        domain = domain.lower()
+        path = url_lower.split(domain)[-1] if domain in url_lower else ""
         
         risk_score = 0.0
         indicators = []
@@ -119,10 +111,14 @@ async def root():
 async def health():
     return {"status": "healthy", "service": "ScamCap API"}
 
-@app.post("/api/v1/test/quick-scan", response_model=QuickScanResponse)
-async def quick_scan(request: QuickScanRequest):
-    """Quick URL safety check"""
-    result = analyze_url(request.url)
+@app.post("/api/v1/test/quick-scan")
+async def quick_scan(request: dict):
+    """Quick URL safety check - accepts plain dict to avoid Pydantic issues"""
+    url = request.get("url", "")
+    if not url:
+        return {"success": False, "error": "URL is required"}
+    
+    result = analyze_url(url)
     risk_score = result["risk_score"]
     
     # Determine risk level (0-40: SAFE, 40-70: MEDIUM, 70-100: DANGER)
@@ -137,14 +133,14 @@ async def quick_scan(request: QuickScanRequest):
         risk_level = "DANGER"
         message = "🚨 High Risk - Potential threat detected"
     
-    return QuickScanResponse(
-        success=True,
-        is_safe=result["is_safe"],
-        risk_score=round(risk_score, 2),
-        risk_level=risk_level,
-        message=message,
-        indicators=result["indicators"]
-    )
+    return {
+        "success": True,
+        "is_safe": result["is_safe"],
+        "risk_score": round(risk_score, 2),
+        "risk_level": risk_level,
+        "message": message,
+        "indicators": result["indicators"]
+    }
 
 @app.get("/api/v1/test/health")
 async def test_health():
