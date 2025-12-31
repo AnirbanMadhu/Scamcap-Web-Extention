@@ -1,5 +1,7 @@
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// IMPORTANT: Set NEXT_PUBLIC_API_URL environment variable in Vercel dashboard
+// Example: https://your-backend-project.vercel.app
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://scamcap-api.vercel.app';
 
 export const API_ENDPOINTS = {
   // Health

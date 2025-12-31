@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import os
+import sys
 import logging
 
 # Setup logging
@@ -14,26 +15,34 @@ try:
 except Exception as e:
     logger.info("dotenv not loaded (not needed in production)")
 
-# Import routes - works when backend folder is deployed to Vercel
+# Import routes - try multiple import styles for different environments
 routes_loaded = False
 import_error = None
 
+# Try relative imports first (for Vercel/standalone backend), then absolute imports (for root project)
 try:
     logger.info("Attempting to import routes...")
-    from app.api.routes.phishing import router as phishing_router
-    logger.info("✓ Phishing router imported")
-    from app.api.routes.deepfake import router as deepfake_router
-    logger.info("✓ Deepfake router imported")
-    from app.api.routes.auth import router as auth_router
-    logger.info("✓ Auth router imported")
-    from app.api.routes.mfa import router as mfa_router
-    logger.info("✓ MFA router imported")
-    from app.api.routes.test import router as test_router
-    logger.info("✓ Test router imported")
-    from app.config.database import connect_to_mongo, close_mongo_connection
-    logger.info("✓ Database imported")
-    from app.config.settings import get_settings
-    logger.info("✓ Settings imported")
+    
+    # Try backend.app imports (when running from project root via start_server.py)
+    try:
+        from backend.app.api.routes.phishing import router as phishing_router
+        from backend.app.api.routes.deepfake import router as deepfake_router
+        from backend.app.api.routes.auth import router as auth_router
+        from backend.app.api.routes.mfa import router as mfa_router
+        from backend.app.api.routes.test import router as test_router
+        from backend.app.config.database import connect_to_mongo, close_mongo_connection
+        from backend.app.config.settings import get_settings
+        logger.info("✓ Imported using backend.app prefix")
+    except ImportError:
+        # Try app imports (when running from backend folder / Vercel)
+        from app.api.routes.phishing import router as phishing_router
+        from app.api.routes.deepfake import router as deepfake_router
+        from app.api.routes.auth import router as auth_router
+        from app.api.routes.mfa import router as mfa_router
+        from app.api.routes.test import router as test_router
+        from app.config.database import connect_to_mongo, close_mongo_connection
+        from app.config.settings import get_settings
+        logger.info("✓ Imported using app prefix")
     
     routes_loaded = True
     logger.info("All imports successful!")

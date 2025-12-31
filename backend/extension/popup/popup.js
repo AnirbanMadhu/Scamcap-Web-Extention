@@ -191,53 +191,79 @@ function displayResult(result) {
     const scoreValueEl = querySelector('.score-value');
     if (scoreValueEl) scoreValueEl.textContent = riskScorePercent;
 
-    // Update risk level with proper text and styling
+    // Get the safety badge element
+    const safetyBadge = getElement('safetyBadge');
+    const safetyIcon = safetyBadge ? safetyBadge.querySelector('.safety-icon') : null;
+    const safetyText = safetyBadge ? safetyBadge.querySelector('.safety-text') : null;
+
+    // Risk levels: 0-40% SAFE (green), 40-70% MEDIUM (yellow), 70-100% DANGER (red)
+    if (riskScorePercent >= 70) {
+        // DANGER - Red
+        if (safetyBadge) {
+            safetyBadge.style.background = 'linear-gradient(135deg, #D32F2F, #F44336)';
+            safetyBadge.style.color = 'white';
+        }
+        if (safetyIcon) safetyIcon.textContent = '🚨';
+        if (safetyText) safetyText.textContent = 'DANGER';
+    } else if (riskScorePercent >= 40) {
+        // MEDIUM - Yellow/Orange
+        if (safetyBadge) {
+            safetyBadge.style.background = 'linear-gradient(135deg, #FF9800, #FFC107)';
+            safetyBadge.style.color = 'white';
+        }
+        if (safetyIcon) safetyIcon.textContent = '⚠️';
+        if (safetyText) safetyText.textContent = 'MEDIUM';
+    } else {
+        // SAFE - Green
+        if (safetyBadge) {
+            safetyBadge.style.background = 'linear-gradient(135deg, #4CAF50, #8BC34A)';
+            safetyBadge.style.color = 'white';
+        }
+        if (safetyIcon) safetyIcon.textContent = '✓';
+        if (safetyText) safetyText.textContent = 'SAFE';
+    }
+
+    // Update risk level text element (if exists)
     const riskLevelEl = getElement('riskLevel');
 
     if (riskLevelEl) {
         // Clear existing classes
         riskLevelEl.className = 'risk-level';
 
-        // Determine risk level based on score and level
-        if (result.risk_level === 'CRITICAL') {
-            riskLevelEl.className = 'risk-level critical';
-            riskLevelEl.textContent = '🚨 CRITICAL THREAT';
+        if (riskScorePercent >= 70) {
+            riskLevelEl.className = 'risk-level danger';
+            riskLevelEl.textContent = '🚨 DANGER';
             riskLevelEl.style.color = '#D32F2F';
             riskLevelEl.style.fontWeight = 'bold';
             riskLevelEl.style.fontSize = '16px';
-        } else if (result.risk_level === 'HIGH') {
-            riskLevelEl.className = 'risk-level high';
-            riskLevelEl.textContent = '⚠️ HIGH RISK';
-            riskLevelEl.style.color = '#F44336';
-        } else if (result.risk_level === 'MEDIUM') {
+        } else if (riskScorePercent >= 40) {
             riskLevelEl.className = 'risk-level medium';
-            riskLevelEl.textContent = '⚠️ MEDIUM RISK';
+            riskLevelEl.textContent = '⚠️ MEDIUM';
             riskLevelEl.style.color = '#FF9800';
-        } else if (result.risk_level === 'LOW') {
-            riskLevelEl.className = 'risk-level low';
-            riskLevelEl.textContent = '⚠️ LOW RISK';
-            riskLevelEl.style.color = '#FFC107';
+            riskLevelEl.style.fontWeight = 'bold';
         } else {
             riskLevelEl.className = 'risk-level safe';
             riskLevelEl.textContent = '✓ SAFE';
             riskLevelEl.style.color = '#4CAF50';
+            riskLevelEl.style.fontWeight = 'bold';
         }
     }
 
-    // Update status
+    // Update status header
     const statusText = querySelector('.status-text');
     const statusDot = querySelector('.status-dot');
 
-    if (result.is_safe) {
-        if (statusText) statusText.textContent = 'Protected';
-        if (statusDot) statusDot.className = 'status-dot active';
-    } else {
+    if (riskScorePercent >= 40) {
+        // Any risk above 40% shows as threat
         if (statusText) statusText.textContent = 'Threat Detected';
         if (statusDot) statusDot.className = 'status-dot danger';
+    } else {
+        if (statusText) statusText.textContent = 'Protected';
+        if (statusDot) statusDot.className = 'status-dot active';
     }
 
-    // Show threat details if unsafe
-    if (!result.is_safe && result.indicators && result.indicators.length > 0) {
+    // Show threat details if risk >= 40%
+    if (riskScorePercent >= 40 && result.indicators && result.indicators.length > 0) {
         const threatDetails = getElement('threatDetails');
         const threatIndicators = getElement('threatIndicators');
 
@@ -252,6 +278,9 @@ function displayResult(result) {
         }
 
         if (threatDetails) threatDetails.style.display = 'block';
+    } else {
+        const threatDetails = getElement('threatDetails');
+        if (threatDetails) threatDetails.style.display = 'none';
     }
 }
 

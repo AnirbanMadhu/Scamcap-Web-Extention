@@ -1,28 +1,59 @@
 """
 Vercel Serverless Entry Point
+This file serves as the main entry point for Vercel serverless functions.
 """
 import sys
 import os
 
-# Add project root to path
-project_root = os.path.dirname(os.path.dirname(__file__))
-sys.path.insert(0, project_root)
-sys.path.insert(0, os.path.join(project_root, 'backend'))
+# Get the absolute path to the project root
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+backend_path = os.path.join(project_root, 'backend')
 
-# Import after path setup
+# Add paths to sys.path for imports
+if backend_path not in sys.path:
+    sys.path.insert(0, backend_path)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# Set up environment
+os.environ.setdefault('ENVIRONMENT', 'production')
+
+# Import the FastAPI app
 try:
-    from app.main import app
+    from backend.app.main import app
 except ImportError:
     try:
-        from backend.app.main import app
+        from app.main import app
     except ImportError as e:
-        # Fallback: create minimal app if imports fail
+        import traceback
         from fastapi import FastAPI
-        app = FastAPI()
+        from fastapi.middleware.cors import CORSMiddleware
+        
+        app = FastAPI(title="ScamCap API - Error Mode")
+        
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
         
         @app.get("/")
         def root():
-            return {"error": f"Import failed: {str(e)}", "message": "Check deployment logs"}
+            return {
+                "error": "Import failed",
+                "message": str(e),
+                "traceback": traceback.format_exc(),
+                "sys_path": sys.path[:5],
+                "project_root": project_root,
+                "backend_path": backend_path,
+                "cwd": os.getcwd()
+            }
+        
+        @app.get("/health")
+        def health():
+            return {"status": "error", "message": "App not properly loaded"}
 
-# Export for Vercel
-app = app
+# Handler for Vercel
+handler = app

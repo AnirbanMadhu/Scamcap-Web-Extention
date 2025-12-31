@@ -1,13 +1,23 @@
-// ScamCap Background Service Worker - FINAL WORKING VERSION
+// ScamCap Background Service Worker - Production Ready
 console.log('ScamCap service worker starting...');
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+// ============================================
+// IMPORTANT: Configure your API URL here!
+// ============================================
+// After deploying your backend to Vercel, update this URL
+// Format: https://your-backend-project.vercel.app/api/v1
+// For local development: http://localhost:8000/api/v1
+// ============================================
+const API_BASE_URL = 'https://scamcap-api.vercel.app/api/v1';
+
 const scanCache = new Map();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 let stats = { threatsBlocked: 0, pagesScanned: 0, mfaTriggered: 0 };
 let settings = {
     enabled: true,
     mfaEnabled: false,
-    riskThreshold: 0.7
+    riskThreshold: 0.7,
+    notificationsEnabled: true
 };
 
 // Load stats from storage

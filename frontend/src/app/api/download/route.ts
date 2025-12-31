@@ -2,19 +2,41 @@ import { NextResponse } from 'next/server'
 import { promises as fs } from 'fs'
 import path from 'path'
 import archiver from 'archiver'
-import { Readable } from 'stream'
 
 export async function GET() {
   try {
-    // Path to the extension folder (go up from frontend to root, then to extension)
-    const extensionPath = path.join(process.cwd(), '..', 'extension')
+    // Try multiple possible paths for the extension folder
+    const possiblePaths = [
+      path.join(process.cwd(), '..', 'backend', 'extension'),  // Vercel monorepo structure
+      path.join(process.cwd(), 'backend', 'extension'),         // If deployed from root
+      path.join(process.cwd(), '..', 'extension'),              // Alternative structure
+      path.join(process.cwd(), 'extension'),                    // Direct structure
+    ]
     
-    // Check if extension folder exists
-    try {
-      await fs.access(extensionPath)
-    } catch {
+    let extensionPath: string | null = null
+    
+    // Find the first existing path
+    for (const testPath of possiblePaths) {
+      try {
+        await fs.access(testPath)
+        extensionPath = testPath
+        console.log('Found extension at:', testPath)
+        break
+      } catch {
+        console.log('Extension not found at:', testPath)
+      }
+    }
+    
+    if (!extensionPath) {
+      console.error('Extension folder not found in any location')
+      console.error('CWD:', process.cwd())
+      console.error('Tried paths:', possiblePaths)
       return NextResponse.json(
-        { error: 'Extension folder not found' },
+        { 
+          error: 'Extension folder not found',
+          cwd: process.cwd(),
+          triedPaths: possiblePaths 
+        },
         { status: 404 }
       )
     }
@@ -36,7 +58,7 @@ export async function GET() {
       archive.on('error', (err: Error) => reject(err))
       
       // Add the extension directory to the archive
-      archive.directory(extensionPath, 'scamcap-extension')
+      archive.directory(extensionPath!, 'scamcap-extension')
       
       // Finalize the archive
       archive.finalize()
@@ -56,7 +78,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error creating zip:', error)
     return NextResponse.json(
-      { error: 'Failed to create extension package' },
+      { error: 'Failed to create extension package', details: String(error) },
       { status: 500 }
     )
   }

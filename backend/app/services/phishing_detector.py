@@ -176,10 +176,12 @@ class PhishingDetector:
                 score += 0.3
                 indicators.append("Uses URL shortener")
             
-            # Check for suspicious TLDs
-            if any(parsed.netloc.endswith(tld) for tld in self.suspicious_tlds):
-                score += 0.4
-                indicators.append("Suspicious top-level domain")
+            # Check for suspicious TLDs - High risk indicator
+            for tld in self.suspicious_tlds:
+                if parsed.netloc.endswith(tld):
+                    score += 0.5
+                    indicators.append(f"High-risk domain extension ({tld})")
+                    break
             
             # Check URL length
             if len(url) > 120:
@@ -231,22 +233,45 @@ class PhishingDetector:
                 indicators.append("Domain is in known phishing list")
                 return {'score': score, 'indicators': indicators, 'details': {'domain': domain}}
             
-            # Check for domain spoofing
+            # Check for domain spoofing - CRITICAL indicator
+            # First, check if this IS a legitimate domain (to avoid false positives)
+            clean_domain = domain.replace('www.', '')
+            is_legitimate = False
             for legit_domain in self.legitimate_domains:
-                if self._is_spoofed_domain(domain, legit_domain):
-                    score += 0.8
-                    indicators.append(f"Domain appears to spoof {legit_domain}")
+                if clean_domain == legit_domain or clean_domain.endswith('.' + legit_domain):
+                    is_legitimate = True
+                    break
             
-            # Check for suspicious keywords in domain
-            phishing_keywords = ['secure', 'login', 'verify', 'update', 'account', 
-                               'banking', 'support', 'help', 'service']
-            keyword_count = sum(1 for kw in phishing_keywords if kw in domain)
-            if keyword_count >= 2:
-                score += 0.4
-                indicators.append("Multiple suspicious keywords in domain")
-            elif keyword_count == 1:
-                score += 0.2
-                indicators.append("Suspicious keyword in domain")
+            # Only check for spoofing if it's NOT a legitimate domain
+            if not is_legitimate:
+                for legit_domain in self.legitimate_domains:
+                    legit_name = legit_domain.split('.')[0]  # e.g., 'amazon' from 'amazon.com'
+                    # Check if legitimate brand name is in the domain but it's not the actual domain
+                    if legit_name in domain and legit_domain not in domain:
+                        score += 0.9  # Very high score for brand impersonation
+                        indicators.append(f"⚠️ BRAND IMPERSONATION: Fake {legit_domain} domain!")
+                        break
+                    elif self._is_spoofed_domain(domain, legit_domain):
+                        score += 0.85
+                        indicators.append(f"Domain appears to spoof {legit_domain}")
+                        break
+            
+            # Only check for suspicious keywords if not a legitimate domain
+            if not is_legitimate:
+                # Check for suspicious keywords in domain
+                phishing_keywords = ['secure', 'login', 'verify', 'update', 'account', 
+                                   'banking', 'support', 'help', 'service', 'suspended',
+                                   'confirm', 'billing', 'payment', 'alert', 'security']
+                keyword_count = sum(1 for kw in phishing_keywords if kw in domain)
+                if keyword_count >= 3:
+                    score += 0.6
+                    indicators.append(f"Multiple phishing keywords in domain ({keyword_count} found)")
+                elif keyword_count >= 2:
+                    score += 0.45
+                    indicators.append("Multiple suspicious keywords in domain")
+                elif keyword_count == 1:
+                    score += 0.25
+                    indicators.append("Suspicious keyword in domain")
             
             # Check for excessive subdomains
             if domain.count('.') > 3:
@@ -305,23 +330,37 @@ class PhishingDetector:
 
     def _is_spoofed_domain(self, domain: str, legitimate: str) -> bool:
         """Check if domain is attempting to spoof a legitimate domain"""
-        if domain == legitimate:
+        # Clean up domain (remove www. prefix)
+        clean_domain = domain.lower().replace('www.', '')
+        clean_legit = legitimate.lower().replace('www.', '')
+        
+        # If it's exactly the legitimate domain, it's not spoofed
+        if clean_domain == clean_legit:
             return False
         
-        # Check for character substitution
+        # If domain ends with the legitimate domain (e.g., mail.google.com), it's not spoofed
+        if clean_domain.endswith('.' + clean_legit) or clean_domain == clean_legit:
+            return False
+        
+        # Check for character substitution attacks
         common_substitutions = {
             'o': '0', 'i': '1', 'l': '1', 'e': '3',
             'a': '@', 's': '$', 'g': '9'
         }
         
         for char, substitute in common_substitutions.items():
-            spoofed = legitimate.replace(char, substitute)
-            if domain == spoofed:
+            spoofed = clean_legit.replace(char, substitute)
+            if clean_domain == spoofed:
                 return True
         
-        # Check if legitimate domain is embedded
-        if legitimate.replace('.', '') in domain.replace('.', ''):
-            if domain != legitimate:
+        # Check for typosquatting (adding/removing characters)
+        legit_name = clean_legit.split('.')[0]  # e.g., 'google' from 'google.com'
+        domain_name = clean_domain.split('.')[0]
+        
+        # If the domain name contains the brand but has extra characters AND different TLD
+        if legit_name in domain_name and domain_name != legit_name:
+            # This could be like 'google-login.com' or 'googlesecure.xyz'
+            if not clean_domain.endswith(clean_legit):
                 return True
         
         return False

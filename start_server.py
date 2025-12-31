@@ -8,8 +8,14 @@ import os
 import uvicorn
 from dotenv import load_dotenv
 
-# Add the project root to the path
-sys.path.insert(0, os.path.abspath('.'))
+# Add both project root and backend folder to the path
+project_root = os.path.abspath('.')
+backend_path = os.path.join(project_root, 'backend')
+
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+if backend_path not in sys.path:
+    sys.path.insert(0, backend_path)
 
 # Load environment variables
 load_dotenv()

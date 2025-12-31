@@ -36,42 +36,88 @@ async def quick_scan(request: QuickScanRequest):
 
         # Use advanced phishing detection
         phishing_result = await phishing_detector.analyze(url, request.content)
-        if phishing_result.is_phishing:
-            risk_score += phishing_result.risk_score * 0.8  # Weight phishing detection heavily
-            indicators.extend([f"🐟 {indicator}" for indicator in phishing_result.threat_indicators])
+        
+        # Start with the phishing detector's score as base
+        risk_score = phishing_result.risk_score
+        if phishing_result.threat_indicators:
+            indicators.extend([f"⚠️ {indicator}" for indicator in phishing_result.threat_indicators])
 
         # Enhanced malware and suspicious site detection
         malware_indicators = await _analyze_malware_patterns(url, parsed_url)
         if malware_indicators['score'] > 0:
-            risk_score += malware_indicators['score'] * 0.6  # Weight malware detection
+            risk_score = max(risk_score, risk_score + malware_indicators['score'] * 0.3)
             indicators.extend(malware_indicators['indicators'])
 
         # Additional suspicious patterns
         pattern_indicators = _analyze_suspicious_patterns(url, parsed_url)
         if pattern_indicators['score'] > 0:
-            risk_score += pattern_indicators['score'] * 0.4
+            risk_score = max(risk_score, risk_score + pattern_indicators['score'] * 0.2)
             indicators.extend(pattern_indicators['indicators'])
+
+        # Brand impersonation detection boost
+        brand_names = ['paypal', 'amazon', 'microsoft', 'apple', 'google', 'netflix', 'facebook', 'instagram', 'twitter', 'linkedin', 'bank']
+        domain = parsed_url.netloc.lower().replace('www.', '')
+        
+        # List of legitimate domain patterns
+        legitimate_domains_exact = {
+            'paypal.com', 'amazon.com', 'amazon.in', 'amazon.co.uk', 'microsoft.com', 
+            'apple.com', 'google.com', 'netflix.com', 'facebook.com', 'instagram.com', 
+            'twitter.com', 'x.com', 'linkedin.com', 'mail.google.com', 'accounts.google.com',
+            'login.microsoft.com', 'outlook.com', 'live.com', 'github.com', 'youtube.com'
+        }
+        
+        # Get the actual registered domain (last 2 parts for .com, last 3 for .co.uk etc)
+        domain_parts = domain.split('.')
+        if len(domain_parts) >= 2:
+            # Handle common TLDs
+            if len(domain_parts) >= 3 and domain_parts[-2] in ['co', 'com', 'org', 'net']:
+                actual_domain = '.'.join(domain_parts[-3:])
+            else:
+                actual_domain = '.'.join(domain_parts[-2:])
+        else:
+            actual_domain = domain
+        
+        # Check if the ACTUAL domain (not subdomain) is legitimate
+        is_legitimate = actual_domain in legitimate_domains_exact
+        
+        # Also check for legitimate subdomains of known domains
+        for legit in legitimate_domains_exact:
+            if domain == legit or (domain.endswith('.' + legit) and not any(brand in domain.replace(legit, '') for brand in brand_names)):
+                is_legitimate = True
+                break
+        
+        # Only check for brand impersonation if NOT a legitimate domain
+        if not is_legitimate:
+            for brand in brand_names:
+                # If brand name appears anywhere in the domain
+                if brand in domain:
+                    # Check if the actual TLD domain is the real brand domain
+                    real_domain = f"{brand}.com"
+                    
+                    # The key check: is the ACTUAL domain (last 2 parts) the real brand?
+                    # For paypal.com.secure-verify.tk -> actual is secure-verify.tk, NOT paypal.com
+                    if actual_domain != real_domain and not actual_domain.endswith(f".{brand}.com"):
+                        risk_score = max(risk_score, 0.92)  # 92% for brand impersonation
+                        if f"BRAND IMPERSONATION" not in str(indicators):
+                            indicators.insert(0, f"🚨 CRITICAL: {brand.upper()} BRAND IMPERSONATION DETECTED!")
+                            indicators.insert(1, f"⚠️ Fake domain pretending to be {real_domain}")
+                        break
 
         # Cap risk score at 1.0
         risk_score = min(risk_score, 1.0)
 
-        # Determine risk level and safety with enhanced thresholds
-        if risk_score >= 0.8:
-            risk_level = "CRITICAL"
+        # Determine risk level and safety based on thresholds:
+        # 0-40% = SAFE (green)
+        # 40-70% = MEDIUM (yellow) 
+        # 70-100% = DANGER (red)
+        if risk_score >= 0.7:
+            risk_level = "DANGER"
             is_safe = False
-            message = "🚨 CRITICAL RISK - Malware/Phishing Detected! Do not proceed!"
-        elif risk_score >= 0.6:
-            risk_level = "HIGH"
-            is_safe = False
-            message = "⚠️ HIGH RISK - Strong indicators of phishing/malware!"
+            message = "🚨 DANGER - Phishing/Malware Detected! Do not proceed!"
         elif risk_score >= 0.4:
             risk_level = "MEDIUM"
             is_safe = False
-            message = "⚠️ MEDIUM RISK - Suspicious activity detected"
-        elif risk_score >= 0.2:
-            risk_level = "LOW"
-            is_safe = False
-            message = "⚠️ LOW RISK - Minor suspicious patterns found"
+            message = "⚠️ MEDIUM RISK - Suspicious activity detected. Proceed with caution."
         else:
             risk_level = "SAFE"
             is_safe = True
