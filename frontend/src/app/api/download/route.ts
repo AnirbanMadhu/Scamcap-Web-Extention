@@ -40,8 +40,8 @@ export async function GET() {
       archive.on('end', () => resolve())
       archive.on('error', (err: Error) => reject(err))
       
-      // Add the extension directory to the archive
-      archive.directory(extensionPath, 'scamcap-extension')
+      // Add the extension directory to the archive at root level (false = no parent folder)
+      archive.directory(extensionPath, false)
       
       // Finalize the archive
       archive.finalize()
