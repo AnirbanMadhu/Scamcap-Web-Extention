@@ -5,9 +5,67 @@ console.log('ScamCap service worker starting...');
 // IMPORTANT: Configure your API URL here!
 // ============================================
 // For LOCAL DEVELOPMENT: http://localhost:3000/api/v1
-// For PRODUCTION: Your deployed frontend URL
+// For PRODUCTION: Your deployed frontend URL (set to null to use offline mode)
 // ============================================
-const API_BASE_URL = 'https://scamcap-web-extention-hg7hybmla-koushikm203-9230s-projects.vercel.app/api/v1';
+const API_BASE_URL = null; // Set to your API URL or null for offline mode
+
+// Offline phishing detection (works without API)
+function analyzeUrlOffline(url) {
+    const suspiciousPatterns = [
+        /login/i, /verify/i, /account/i, /secure/i, /update/i,
+        /confirm/i, /banking/i, /paypal/i, /password/i, /signin/i
+    ];
+
+    let riskScore = 0;
+    const indicators = [];
+
+    // Check for suspicious patterns
+    suspiciousPatterns.forEach(pattern => {
+        if (pattern.test(url)) {
+            riskScore += 0.15;
+            indicators.push(`Suspicious keyword detected`);
+        }
+    });
+
+    // Check for IP address instead of domain
+    if (/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(url)) {
+        riskScore += 0.3;
+        indicators.push('URL uses IP address instead of domain name');
+    }
+
+    // Check for excessive subdomains
+    try {
+        const domain = url.replace(/https?:\/\//, '').split('/')[0];
+        const subdomains = domain.split('.').length - 2;
+        if (subdomains > 2) {
+            riskScore += 0.2;
+            indicators.push('Excessive subdomains detected');
+        }
+    } catch (e) {}
+
+    // Check for suspicious TLDs
+    if (/\.(tk|ml|ga|cf|gq)$/i.test(url)) {
+        riskScore += 0.25;
+        indicators.push('Suspicious top-level domain');
+    }
+
+    riskScore = Math.min(riskScore, 1);
+
+    let riskLevel = 'low';
+    if (riskScore >= 0.7) riskLevel = 'critical';
+    else if (riskScore >= 0.5) riskLevel = 'high';
+    else if (riskScore >= 0.3) riskLevel = 'medium';
+
+    return {
+        url,
+        is_safe: riskScore < 0.5,
+        risk_score: riskScore,
+        risk_level: riskLevel,
+        indicators: indicators.length > 0 ? indicators : ['No immediate threats detected'],
+        timestamp: new Date().toISOString(),
+        source: 'offline'
+    };
+}
 
 const scanCache = new Map();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
@@ -169,28 +227,41 @@ async function scanPage(tabId, url) {
 
         console.log('🔍 Scanning URL:', url);
 
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        let result;
 
-        const response = await fetch(`${API_BASE_URL}/test/quick-scan`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ url: url }),
-            signal: controller.signal
-        });
+        // Try API if configured, otherwise use offline mode
+        if (API_BASE_URL) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
-        clearTimeout(timeoutId);
+                const response = await fetch(`${API_BASE_URL}/test/quick-scan`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url }),
+                    signal: controller.signal
+                });
 
-        if (!response.ok) {
-            console.error('❌ API error:', response.status);
-            updateBadge(tabId, { is_safe: true, risk_score: 0, risk_level: 'ERROR' });
-            return;
+                clearTimeout(timeoutId);
+
+                if (response.ok) {
+                    result = await response.json();
+                    console.log('✅ API Scan result:', result);
+                } else {
+                    console.warn('⚠️ API error:', response.status, '- falling back to offline mode');
+                    result = analyzeUrlOffline(url);
+                }
+            } catch (error) {
+                console.warn('⚠️ API request failed:', error.message, '- using offline mode');
+                result = analyzeUrlOffline(url);
+            }
+        } else {
+            // Use offline mode
+            console.log('📴 Using offline phishing detection');
+            result = analyzeUrlOffline(url);
         }
-
-        const result = await response.json();
-        console.log('✅ Scan result:', result);
 
         // Update stats
         stats.pagesScanned++;
