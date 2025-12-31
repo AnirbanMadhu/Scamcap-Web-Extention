@@ -15,6 +15,7 @@ node_modules/
 *.log
 .DS_Store
 frontend/
-backend/extension/
-backend/ml-models/
+backend/
 start_server.py
+*.md
+!README.md
