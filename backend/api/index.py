@@ -4,6 +4,7 @@ This serves the FastAPI application when the backend folder is deployed separate
 """
 import sys
 import os
+import traceback
 
 # Get paths
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -19,8 +20,12 @@ os.environ.setdefault('ENVIRONMENT', 'production')
 # Import the FastAPI app
 try:
     from app.main import app
+    print("Successfully imported app from app.main")
 except ImportError as e:
-    import traceback
+    error_tb = traceback.format_exc()
+    print(f"Import error: {e}")
+    print(f"Traceback: {error_tb}")
+    
     from fastapi import FastAPI
     from fastapi.middleware.cors import CORSMiddleware
     
@@ -39,15 +44,20 @@ except ImportError as e:
         return {
             "error": "Import failed",
             "message": str(e),
-            "traceback": traceback.format_exc(),
+            "traceback": error_tb,
             "backend_root": backend_root,
             "current_dir": current_dir,
-            "sys_path": sys.path[:5]
+            "sys_path": sys.path[:5],
+            "env_vars": {
+                "MONGODB_URL": "set" if os.getenv("MONGODB_URL") else "NOT SET",
+                "JWT_SECRET_KEY": "set" if os.getenv("JWT_SECRET_KEY") else "NOT SET",
+                "ENVIRONMENT": os.getenv("ENVIRONMENT", "NOT SET")
+            }
         }
     
     @app.get("/health")
     def health():
-        return {"status": "error", "message": "App not properly loaded"}
+        return {"status": "error", "message": "App not properly loaded", "error": str(e)}
 
 # Handler for Vercel
 handler = app
