@@ -15,6 +15,10 @@
       "dest": "backend/api/index.py"
     },
     {
+      "src": "/status",
+      "dest": "backend/api/index.py"
+    },
+    {
       "src": "/docs",
       "dest": "backend/api/index.py"
     },
