@@ -1,44 +1,19 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "backend/api/index.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "50mb"
-      }
-    }
+  "rewrites": [
+    { "source": "/api/v1/(.*)", "destination": "/backend/api/index.py" },
+    { "source": "/status", "destination": "/backend/api/index.py" },
+    { "source": "/docs", "destination": "/backend/api/index.py" },
+    { "source": "/redoc", "destination": "/backend/api/index.py" },
+    { "source": "/openapi.json", "destination": "/backend/api/index.py" },
+    { "source": "/health", "destination": "/backend/api/index.py" },
+    { "source": "/(.*)", "destination": "/backend/api/index.py" }
   ],
-  "routes": [
-    {
-      "src": "/api/v1/(.*)",
-      "dest": "backend/api/index.py"
-    },
-    {
-      "src": "/status",
-      "dest": "backend/api/index.py"
-    },
-    {
-      "src": "/docs",
-      "dest": "backend/api/index.py"
-    },
-    {
-      "src": "/redoc",
-      "dest": "backend/api/index.py"
-    },
-    {
-      "src": "/openapi.json",
-      "dest": "backend/api/index.py"
-    },
-    {
-      "src": "/health",
-      "dest": "backend/api/index.py"
-    },
-    {
-      "src": "/",
-      "dest": "backend/api/index.py"
+  "functions": {
+    "backend/api/index.py": {
+      "maxDuration": 10,
+      "memory": 1024
     }
-  ],
+  },
   "env": {
     "PYTHONUNBUFFERED": "1"
   },
