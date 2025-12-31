@@ -1,35 +1,36 @@
-# FastAPI and Web Framework
+# FastAPI and Web Framework - REQUIRED
 fastapi==0.109.0
-uvicorn==0.27.0
 pydantic==2.5.3
 pydantic-settings==2.1.0
-python-multipart==0.0.6
 
-# Database
-motor==3.3.2
-pymongo==4.6.1
+# No uvicorn needed for Vercel (serverless)
+# uvicorn is NOT needed for Vercel deployment
 
-# Authentication & Security
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-bcrypt==4.1.2
-cryptography>=41.0.0
+# Database - OPTIONAL (not used in lightweight mode)
+# motor==3.3.2
+# pymongo==4.6.1
 
-# HTTP & Networking
-requests==2.31.0
-httpx==0.26.0
+# Authentication & Security - OPTIONAL
+# python-jose[cryptography]==3.3.0
+# passlib[bcrypt]==1.7.4
+# bcrypt==4.1.2
+# cryptography>=41.0.0
 
-# Image Processing (for deepfake detection)
-Pillow==10.2.0
+# HTTP & Networking - OPTIONAL
+# requests==2.31.0
+# httpx==0.26.0
 
-# SMS/MFA Services
-twilio==8.13.0
+# Image Processing - OPTIONAL
+# Pillow==10.2.0
 
-# Environment & Configuration
-python-dotenv==1.0.0
+# SMS/MFA Services - OPTIONAL
+# twilio==8.13.0
 
-# Email validation
-email-validator==2.1.0
+# Environment & Configuration - OPTIONAL (Vercel provides env vars)
+# python-dotenv==1.0.0
 
-# Async support
-aiofiles==23.2.1
+# Email validation - OPTIONAL
+# email-validator==2.1.0
+
+# Async support - OPTIONAL
+# aiofiles==23.2.1
