@@ -320,7 +320,7 @@ async function manualScan() {
     } catch (error) {
         console.error('Manual scan error:', error);
         hideLoading();
-        alert('Scan failed. Backend may not be running at http://localhost:8000');
+        alert('Scan failed. Please check your internet connection or try again later.');
     }
 }
 
