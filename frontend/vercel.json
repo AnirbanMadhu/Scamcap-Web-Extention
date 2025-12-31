@@ -4,6 +4,6 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "env": {
-    "NEXT_PUBLIC_API_URL": "@scamcap_api_url"
+    "NEXT_PUBLIC_API_URL": "https://scamcap-web-extention.vercel.app"
   }
 }
