@@ -1,33 +1,30 @@
 # FastAPI and Web Framework - REQUIRED for Vercel
 fastapi==0.109.0
 
-# No other dependencies needed for basic API functionality
+# Database - REQUIRED for user authentication and MFA
+motor==3.3.2
+pymongo==4.6.1
 
-# Database - OPTIONAL (not used in lightweight mode)
-# motor==3.3.2
-# pymongo==4.6.1
+# Authentication & Security - REQUIRED for JWT and password hashing
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.1.2
 
-# Authentication & Security - OPTIONAL
-# python-jose[cryptography]==3.3.0
-# passlib[bcrypt]==1.7.4
-# bcrypt==4.1.2
-# cryptography>=41.0.0
+# SMS/MFA Services - REQUIRED for MFA functionality
+twilio==8.13.0
 
-# HTTP & Networking - OPTIONAL
+# Environment & Configuration
+python-dotenv==1.0.0
+
+# Email validation - for user registration
+email-validator==2.1.0
+
+# Optional but useful
+python-multipart==0.0.6
+
+# HTTP & Networking - OPTIONAL (for external API calls)
 # requests==2.31.0
 # httpx==0.26.0
 
-# Image Processing - OPTIONAL
+# Image Processing - OPTIONAL (for deepfake detection)
 # Pillow==10.2.0
-
-# SMS/MFA Services - OPTIONAL
-# twilio==8.13.0
-
-# Environment & Configuration - OPTIONAL (Vercel provides env vars)
-# python-dotenv==1.0.0
-
-# Email validation - OPTIONAL
-# email-validator==2.1.0
-
-# Async support - OPTIONAL
-# aiofiles==23.2.1

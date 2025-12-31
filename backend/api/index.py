@@ -1,11 +1,32 @@
 """
-Vercel Serverless Entry Point - Ultra-Minimal Version
-Zero external dependencies beyond FastAPI
+Vercel Serverless Entry Point - Production Ready
+Supports basic API + optional MFA/Auth features
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 import re
 from typing import Optional
+import os
+
+# Optional imports - graceful degradation if not available
+try:
+    from motor.motor_asyncio import AsyncIOMotorClient
+    MONGODB_AVAILABLE = True
+except ImportError:
+    MONGODB_AVAILABLE = False
+
+try:
+    from twilio.rest import Client as TwilioClient
+    TWILIO_AVAILABLE = True
+except ImportError:
+    TWILIO_AVAILABLE = False
+
+try:
+    from jose import jwt
+    from passlib.context import CryptContext
+    AUTH_AVAILABLE = True
+except ImportError:
+    AUTH_AVAILABLE = False
 
 # Create FastAPI app
 app = FastAPI(
@@ -22,6 +43,35 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Database connection (if available)
+db_client = None
+database = None
+
+@app.on_event("startup")
+async def startup_db():
+    """Initialize database connection if MongoDB is available"""
+    global db_client, database
+    if MONGODB_AVAILABLE and os.getenv("MONGODB_URL"):
+        try:
+            db_client = AsyncIOMotorClient(os.getenv("MONGODB_URL"))
+            database = db_client.get_database("scamcap")
+            await db_client.admin.command('ping')
+            print("✓ MongoDB connected successfully")
+        except Exception as e:
+            print(f"⚠️ MongoDB connection failed: {e}")
+            db_client = None
+            database = None
+    else:
+        print("⚠️ MongoDB not available - running in stateless mode")
+
+@app.on_event("shutdown")
+async def shutdown_db():
+    """Close database connection"""
+    global db_client
+    if db_client:
+        db_client.close()
+        print("✓ MongoDB connection closed")
 
 # Phishing detection logic (inline)
 SUSPICIOUS_TLDS = ['.tk', '.ml', '.ga', '.cf', '.gq', '.xyz', '.top', '.pw', '.cc', '.su', '.buzz', '.work', '.click']
@@ -100,9 +150,16 @@ async def root():
         "message": "ScamCap API is running",
         "version": "1.0.0",
         "status": "healthy",
+        "features": {
+            "phishing_detection": True,
+            "mongodb": MONGODB_AVAILABLE and database is not None,
+            "twilio_mfa": TWILIO_AVAILABLE and os.getenv("TWILIO_ACCOUNT_SID") is not None,
+            "jwt_auth": AUTH_AVAILABLE and os.getenv("JWT_SECRET_KEY") is not None
+        },
         "endpoints": {
             "health": "/health",
             "quick_scan": "/api/v1/test/quick-scan",
+            "status": "/status",
             "docs": "/docs"
         }
     }
@@ -110,6 +167,34 @@ async def root():
 @app.get("/health")
 async def health():
     return {"status": "healthy", "service": "ScamCap API"}
+
+@app.get("/status")
+async def status():
+    """Detailed status of all features"""
+    return {
+        "api": "operational",
+        "features": {
+            "phishing_detection": {
+                "available": True,
+                "status": "operational"
+            },
+            "database": {
+                "available": MONGODB_AVAILABLE,
+                "connected": database is not None,
+                "status": "operational" if database else "unavailable"
+            },
+            "mfa_sms": {
+                "available": TWILIO_AVAILABLE,
+                "configured": os.getenv("TWILIO_ACCOUNT_SID") is not None,
+                "status": "operational" if (TWILIO_AVAILABLE and os.getenv("TWILIO_ACCOUNT_SID")) else "unavailable"
+            },
+            "authentication": {
+                "available": AUTH_AVAILABLE,
+                "configured": os.getenv("JWT_SECRET_KEY") is not None,
+                "status": "operational" if (AUTH_AVAILABLE and os.getenv("JWT_SECRET_KEY")) else "unavailable"
+            }
+        }
+    }
 
 @app.post("/api/v1/test/quick-scan")
 async def quick_scan(request: dict):
