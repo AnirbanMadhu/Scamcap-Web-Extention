@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from mangum import Mangum
 from pydantic import BaseModel
 import re
 
@@ -147,11 +146,5 @@ async def quick_scan(request: QuickScanRequest):
 async def quick_scan_options():
     return {}
 
-# Vercel serverless function handler
-from mangum import Mangum
-handler = Mangum(app, lifespan="off", api_gateway_base_path="/")
-
-# For local testing
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# Export app for Vercel
+# Vercel will automatically use this as the ASGI application

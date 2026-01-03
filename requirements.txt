@@ -1,5 +1,4 @@
 # FastAPI and Web Framework
-fastapi==0.109.0
-pydantic==2.5.3
-starlette==0.35.1
-mangum==0.17.0
+fastapi
+pydantic
+uvicorn
