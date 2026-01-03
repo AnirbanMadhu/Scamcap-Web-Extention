@@ -1,4 +1,1 @@
-# FastAPI and Web Framework
-fastapi
-pydantic
-uvicorn
+# No external dependencies needed - using Python standard library

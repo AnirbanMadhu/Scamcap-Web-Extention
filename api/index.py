@@ -1,28 +1,7 @@
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from http.server import BaseHTTPRequestHandler
+import json
 import re
-
-# Create FastAPI app
-app = FastAPI(
-    title="ScamCap API",
-    description="AI-powered phishing and deepfake detection",
-    version="1.0.0"
-)
-
-# Request models
-class QuickScanRequest(BaseModel):
-    url: str
-
-# CORS configuration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+from urllib.parse import parse_qs, urlparse
 
 # Constants
 SUSPICIOUS_TLDS = ['.tk', '.ml', '.ga', '.cf', '.gq', '.xyz', '.top', '.pw', '.cc', '.su', '.buzz', '.work', '.click']
@@ -84,67 +63,91 @@ def analyze_url(url: str):
     except Exception as e:
         return {"risk_score": 0.5, "indicators": [f"Error: {str(e)}"], "is_safe": False}
 
-# Root endpoint
-@app.get("/")
-async def root():
-    return {
-        "message": "ScamCap API is running",
-        "version": "1.0.0",
-        "status": "healthy",
-        "endpoints": {
-            "health": "/health",
-            "quick_scan": "/api/v1/test/quick-scan",
-            "docs": "/docs"
-        }
-    }
-
-# Health check endpoints
-@app.get("/health")
-async def health():
-    return {"status": "healthy", "service": "ScamCap API"}
-
-@app.get("/status")
-async def status():
-    return {"api": "operational", "features": {"phishing_detection": True}}
-
-@app.get("/api/v1/test/health")
-async def test_health():
-    return {"status": "healthy", "service": "ScamCap Test API"}
-
-# Quick scan endpoint
-@app.post("/api/v1/test/quick-scan")
-async def quick_scan(request: QuickScanRequest):
-    try:
-        url = request.url
-        if not url:
-            return JSONResponse({"success": False, "error": "URL required"}, status_code=400)
+class handler(BaseHTTPRequestHandler):
+    def send_cors_headers(self):
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Content-Type', 'application/json')
+    
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_cors_headers()
+        self.end_headers()
+    
+    def do_GET(self):
+        self.send_response(200)
+        self.send_cors_headers()
+        self.end_headers()
         
-        result = analyze_url(url)
-        risk_score = result["risk_score"]
-        risk_percent = int(risk_score * 100)
+        path = self.path
         
-        if risk_percent <= 40:
-            risk_level, message = "SAFE", "✅ Safe - No threats detected"
-        elif risk_percent <= 70:
-            risk_level, message = "MEDIUM", "⚠️ Medium Risk - Exercise caution"
+        if path == '/' or path == '':
+            response = {
+                "message": "ScamCap API is running",
+                "version": "1.0.0",
+                "status": "healthy",
+                "endpoints": {
+                    "health": "/health",
+                    "quick_scan": "/api/v1/test/quick-scan (POST)",
+                    "docs": "/docs"
+                }
+            }
+        elif path == '/health' or path == '/status':
+            response = {"status": "healthy", "service": "ScamCap API"}
+        elif path == '/api/v1/test/health':
+            response = {"status": "healthy", "service": "ScamCap Test API"}
         else:
-            risk_level, message = "DANGER", "🚨 High Risk - Potential threat"
+            response = {"error": "Not found", "path": path}
         
-        return {
-            "success": True,
-            "is_safe": result["is_safe"],
-            "risk_score": round(risk_score, 2),
-            "risk_level": risk_level,
-            "message": message,
-            "indicators": result["indicators"]
-        }
-    except Exception as e:
-        return JSONResponse({"success": False, "error": str(e)}, status_code=500)
-
-# OPTIONS for CORS preflight
-@app.options("/api/v1/test/quick-scan")
-async def quick_scan_options():
-    return {}
-
-# Export app for Vercel
-# Vercel will automatically use this as the ASGI application
+        self.wfile.write(json.dumps(response).encode())
+    
+    def do_POST(self):
+        if self.path == '/api/v1/test/quick-scan':
+            try:
+                content_length = int(self.headers['Content-Length'])
+                post_data = self.rfile.read(content_length)
+                data = json.loads(post_data.decode('utf-8'))
+                
+                url = data.get('url', '')
+                if not url:
+                    self.send_response(400)
+                    self.send_cors_headers()
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"success": False, "error": "URL required"}).encode())
+                    return
+                
+                result = analyze_url(url)
+                risk_score = result["risk_score"]
+                risk_percent = int(risk_score * 100)
+                
+                if risk_percent <= 40:
+                    risk_level, message = "SAFE", "✅ Safe - No threats detected"
+                elif risk_percent <= 70:
+                    risk_level, message = "MEDIUM", "⚠️ Medium Risk - Exercise caution"
+                else:
+                    risk_level, message = "DANGER", "🚨 High Risk - Potential threat"
+                
+                response = {
+                    "success": True,
+                    "is_safe": result["is_safe"],
+                    "risk_score": round(risk_score, 2),
+                    "risk_level": risk_level,
+                    "message": message,
+                    "indicators": result["indicators"]
+                }
+                
+                self.send_response(200)
+                self.send_cors_headers()
+                self.end_headers()
+                self.wfile.write(json.dumps(response).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_cors_headers()
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": str(e)}).encode())
+        else:
+            self.send_response(404)
+            self.send_cors_headers()
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": "Not found"}).encode())
