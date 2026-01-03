@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from starlette.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
+from pydantic import BaseModel
 import re
 
 # Create FastAPI app
@@ -11,7 +12,11 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS
+# Request models
+class QuickScanRequest(BaseModel):
+    url: str
+
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -80,6 +85,7 @@ def analyze_url(url: str):
     except Exception as e:
         return {"risk_score": 0.5, "indicators": [f"Error: {str(e)}"], "is_safe": False}
 
+# Root endpoint
 @app.get("/")
 async def root():
     return {
@@ -93,6 +99,7 @@ async def root():
         }
     }
 
+# Health check endpoints
 @app.get("/health")
 async def health():
     return {"status": "healthy", "service": "ScamCap API"}
@@ -101,10 +108,15 @@ async def health():
 async def status():
     return {"api": "operational", "features": {"phishing_detection": True}}
 
+@app.get("/api/v1/test/health")
+async def test_health():
+    return {"status": "healthy", "service": "ScamCap Test API"}
+
+# Quick scan endpoint
 @app.post("/api/v1/test/quick-scan")
-async def quick_scan(request: dict):
+async def quick_scan(request: QuickScanRequest):
     try:
-        url = request.get("url", "")
+        url = request.url
         if not url:
             return JSONResponse({"success": False, "error": "URL required"}, status_code=400)
         
@@ -130,9 +142,10 @@ async def quick_scan(request: dict):
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
 
-@app.get("/api/v1/test/health")
-async def test_health():
-    return {"status": "healthy", "service": "ScamCap Test API"}
+# OPTIONS for CORS preflight
+@app.options("/api/v1/test/quick-scan")
+async def quick_scan_options():
+    return {}
 
 # Vercel serverless function handler
 handler = Mangum(app, lifespan="off")
