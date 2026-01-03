@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
+from mangum import Mangum
 import re
 
 # Create FastAPI app
@@ -132,3 +133,6 @@ async def quick_scan(request: dict):
 @app.get("/api/v1/test/health")
 async def test_health():
     return {"status": "healthy", "service": "ScamCap Test API"}
+
+# Vercel serverless function handler
+handler = Mangum(app, lifespan="off")
