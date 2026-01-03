@@ -1,4 +1,6 @@
 {
+  "installCommand": "echo 'Skipping npm install - Python API only'",
+  "buildCommand": "echo 'No build required for Python serverless functions'",
   "rewrites": [
     { "source": "/api/v1/(.*)", "destination": "/api/index" },
     { "source": "/status", "destination": "/api/index" },
