@@ -8,15 +8,11 @@ __pycache__/
 *.pyo
 *.pyd
 .Python
-node_modules/
-package.json
-package-lock.json
 .git/
 .vscode/
 .idea/
 *.log
 .DS_Store
-frontend/
 backend/
 start_server.py
 tests/

@@ -1,21 +1,33 @@
 {
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/.next",
+  "installCommand": "pip install -r requirements.txt",
   "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/next"
+    },
     {
       "src": "api/index.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
-    { "src": "/api/v1/(.*)", "dest": "/api/index.py" },
-    { "src": "/status", "dest": "/api/index.py" },
-    { "src": "/docs", "dest": "/api/index.py" },
-    { "src": "/redoc", "dest": "/api/index.py" },
-    { "src": "/openapi.json", "dest": "/api/index.py" },
-    { "src": "/health", "dest": "/api/index.py" },
-    { "src": "/(.*)", "dest": "/api/index.py" }
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.py"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
+    }
   ],
   "env": {
-    "PYTHONUNBUFFERED": "1"
+    "PYTHONUNBUFFERED": "1",
+    "NEXT_PUBLIC_API_URL": "https://scamcap-web-extention.vercel.app"
   },
   "headers": [
     {
