@@ -9,6 +9,8 @@ __pycache__/
 *.pyd
 .Python
 node_modules/
+package.json
+package-lock.json
 .git/
 .vscode/
 .idea/
@@ -17,5 +19,6 @@ node_modules/
 frontend/
 backend/
 start_server.py
+tests/
 *.md
 !README.md
